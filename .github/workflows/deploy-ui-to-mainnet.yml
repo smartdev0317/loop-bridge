@@ -1,0 +1,35 @@
+name: deploy-ui-to-mainnet
+on:
+  workflow_dispatch:
+    inputs:
+      maintenance:
+        type: boolean
+        description: Deploy in maintenance mode?
+        required: true
+        default: false
+      branch:
+        type: string
+        description: Target branch
+        required: true
+        default: "main"
+
+jobs:
+  deploy-ui-to-mainnet:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          ref: ${{ github.event.inputs.branch }}
+      - uses: amondnet/vercel-action@v20
+        id: vercel-action-mainnet
+        with:
+          scope: ${{ secrets.AXELAR_TEAM_ID_VERCEL }}
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_BRIDGE_MAINNET_PROJECT_ID }}
+          vercel-args: "--prod --build-env REACT_APP_UNDER_MAINTENANCE=${{github.event.inputs.maintenance}}"
+          alias-domains: |
+            satellite.axelar.network
+            satellite.money
+        env:
+          REACT_APP_UNDER_MAINTENANCE: ${{github.event.inputs.maintenance}}
